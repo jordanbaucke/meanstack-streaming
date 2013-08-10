@@ -1,0 +1,46 @@
+doctype 5
+html(ng-app)
+  head
+    script(src='http://ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular.js')
+    script(src='/socket.io/socket.io.js')
+    script(src='/js/jquery-1.8.3.min.js')
+    script(src='/js/jquery.flot.js')
+    script(src='/js/jquery.flot.time.min.js')
+    script(src='/js/jquery.flot.threshold.min.js')
+    link(rel='stylesheet',href='/bootstrap/css/bootstrap.css')
+    link(rel='stylesheet',href='/css/flat-ui.css')
+    link(rel='stylesheet',href='/css/style.css')
+    script
+      var socket = io.connect('http://localhost');
+
+      function BidsController($scope, $http, $window){
+        $scope.bids = [];
+
+        $scope.save = function(bidForm){
+          $http.post('/placebid', { bid : $scope.newBid }).success(function(response){
+            console.log(response);
+          });
+        };
+
+        $window.socket.on('bid', function (bid) {
+          console.log(bid);
+          $scope.$apply(function(){
+            $scope.bids.push(bid);
+          });
+        });
+
+      };
+
+    body
+    div(ng-controller="BidsController")
+      h1 Enter a bid:
+      form(name="bidForm", ng-submit="save(bidForm)")
+        input.form-control(type="text", ng-model="newBid.price", name="price", placeholder="Enter a price.")
+        input.form-control(type="text", ng-model="newBid.amount", name="amount", placeholder="Enter an amount.")
+        input(type="submit")
+      table(style="border:1px solid black;")
+        tbody
+          tr(ng-repeat="bid in bids")
+            td(style="border:1px solid black;") {{bid.price}} 
+            td(style="border:1px solid black;") ${{bid.amount}}
+      
